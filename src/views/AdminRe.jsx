@@ -1,7 +1,7 @@
 import "../css/Login.css";
 import React, { useEffect, useState } from "react";
 import { Form, Table, Select, message, Spin, Progress, Button, Row, Col, Card, Modal, Pagination, Input } from 'antd';
-import { ExclamationCircleOutlined, DownOutlined, UpOutlined } from '@ant-design/icons';
+import { ExclamationCircleOutlined, SearchOutlined, DownOutlined, UserOutlined, UpOutlined } from '@ant-design/icons';
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
 import { ScrollToTop } from "../components/ScrollToTop";
@@ -37,7 +37,7 @@ export function AdminRe() {
 
     const handleDarBaja = async (record) => {
         confirm({
-            title: '¿Estás seguro de dar de baja esta cuenta?.',
+            title: '¿Estás seguro de dar de baja esta cuenta?',
             icon: <ExclamationCircleOutlined />,
             okText: 'Dar de baja',
             cancelText: 'Cancelar',
@@ -109,7 +109,7 @@ export function AdminRe() {
             message.error("Error al obtener registros");
         }
     };
-    
+
     const toggleRecordExpansion = (recordCurp) => {
         setExpandedRecords(prevState => ({
             ...prevState,
@@ -124,7 +124,7 @@ export function AdminRe() {
     const handleBusquedaChange = (e) => {
         setBusqueda(e.target.value);
     };
-   
+
     const handleBuscar = () => {
         obtenerRegistros();
     };
@@ -134,16 +134,28 @@ export function AdminRe() {
             <Header />
             <div className="boxAdmin">
                 <ScrollToTop />
-                
-                <Titulo tit={"Usuarios de la zona 012"} /> 
+
+                <Titulo tit={"Usuarios de la zona 012"} />
                 <br />
-                <input
-            type="text"
-            value={busqueda}
-            onChange={handleBusquedaChange}
-            placeholder="Buscar por plantel"
-        />
-        <Button onClick={handleBuscar}>Buscar</Button> <br></br><br></br>
+
+
+
+                <div className="flex justify-center mb-4">
+                    <div className="relative w-1/3"> {/* Ajusta el ancho aquí para que sea más pequeño */}
+                        <Input
+                            className="border border-gray-300 rounded-md pl-10 pr-4 py-2 focus:outline-none focus:ring focus:ring-blue-500"
+                            type="text"
+                            value={busqueda}
+                            onChange={handleBusquedaChange}
+                            placeholder="Buscar por plantel"
+                        />
+                        <SearchOutlined className="absolute left-3 top-2.5 text-gray-500" /> {/* Ícono de búsqueda */}
+                    </div>
+                </div>
+
+
+
+
                 {loading ? (
                     <Spin size="large" />
                 ) : (
@@ -151,33 +163,39 @@ export function AdminRe() {
                         {registros.map((registro, index) => (
                             <Col key={registro.curp} xs={24} sm={12} md={8} lg={8} xl={8}>
                                 <Card
-                                    title={`${registro.nombre} ${registro.aPaterno} ${registro.aMaterno}`}
+                                    title={
+                                        <span>
+                                            <UserOutlined className="mr-2" /> {/* Ícono de usuario */}
+                                            {`${registro.nombre} ${registro.aPaterno} ${registro.aMaterno}`}
+                                        </span>
+                                    }
                                     extra={
                                         <Button type="text" onClick={() => toggleRecordExpansion(registro.curp)}>
                                             {expandedRecords[registro.curp] ? <UpOutlined /> : <DownOutlined />}
                                         </Button>
                                     }
+                                    className="bg-blue-100 shadow-md hover:shadow-lg transition-shadow duration-300"
                                     style={{ marginBottom: 16 }}
                                 >
                                     <p><strong>CURP:</strong> {registro.curp}</p>
                                     {expandedRecords[registro.curp] && (
-                                        <>
-                                            {registro.tipo_sesion} del plantel {registro.nombre_plantel} &nbsp;
-                                            <div>{registro.correo}</div>
-                                            <div><strong>Registro:</strong> {new Date(registro.fecha_registro).toLocaleString()}</div>
-                                            <div><strong>Inicio de sesión:</strong> {new Date(registro.fecha_inicio_sesion).toLocaleString()}</div>
-                                            <div><strong>Cuenta:</strong> {registro.estado_cuenta}</div>
-                                            <div><strong>Usuario:</strong> {registro.estado_usuario}</div>
-                                        </>
+                                        <div className="text-gray-600">
+                                            <p>{registro.tipo_sesion} del plantel {registro.nombre_plantel}</p>
+                                            <p>{registro.correo}</p>
+                                            <p><strong>Registro:</strong> {new Date(registro.fecha_registro).toLocaleString()}</p>
+                                            <p><strong>Inicio de sesión:</strong> {new Date(registro.fecha_inicio_sesion).toLocaleString()}</p>
+                                            <p><strong>Cuenta:</strong> {registro.estado_cuenta}</p>
+                                            <p><strong>Usuario:</strong> {registro.estado_usuario}</p>
+                                        </div>
                                     )}
                                     {registro.estado_usuario === 'Baja' ? (
                                         <div className="acciones ant-space">
-                                            <Button onClick={() => handleReactivar(registro)}>Reactivar</Button>
-                                            <Button onClick={() => handleDarBaja(registro)} disabled>Dar de baja</Button>
+                                            <Button className="bg-blue_uno text-white" onClick={() => handleReactivar(registro)}>Reactivar</Button>
+                                            <Button className="bg-blue_uno text-white" onClick={() => handleDarBaja(registro)} disabled>Dar de baja</Button>
                                         </div>
                                     ) : (
                                         <div className="acciones ant-space">
-                                            <Button onClick={() => handleDarBaja(registro)}>Dar de baja</Button>
+                                            <Button className="bg-blue_uno text-white" onClick={() => handleDarBaja(registro)}>Dar de baja</Button>
                                         </div>
                                     )}
                                 </Card>
@@ -196,18 +214,7 @@ export function AdminRe() {
                 <br />
             </div>
             <Footer />
-            <Modal
-                title="Confirmar Reactivación"
-                visible={modalVisible}
-                onOk={() => {
-                    // Aquí puedes agregar la lógica para reactivar la cuenta
-                    // Por ahora, simplemente cierra el modal
-                    closeModal();
-                }}
-                onCancel={closeModal}
-            >
-                <p>¿Estás seguro de reactivar esta cuenta?</p>
-            </Modal>
+           
         </>
     );
 }

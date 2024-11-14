@@ -91,6 +91,19 @@ export default defineConfig({
               },
             },
           },
+          {
+            urlPattern: ({ url }) => url.origin === 'https://servidor-zonadoce.vercel.app', // URL base de la API
+            handler: 'NetworkFirst', // o 'CacheFirst' si prefieres usar primero el caché
+            options: {
+              cacheName: 'api-cache',
+              networkTimeoutSeconds: 10, // Espera en red antes de recurrir al caché
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 60 * 24 * 7, // 7 días
+              },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
         ],
         maximumFileSizeToCacheInBytes: 3145728,  
       },

@@ -1,5 +1,5 @@
 // src/configF.js
-import { initializeApp, getApps, getApp } from "firebase/app"; // Asegúrate de importar ambas funciones
+import { initializeApp, getApps, getApp } from "firebase/app"; 
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
@@ -20,8 +20,6 @@ if (!getApps().length) {
 } else {
   app = getApp(); // Obtiene la aplicación existente
 }
-
 const storage = getStorage(app);
-
 export { storage };
 

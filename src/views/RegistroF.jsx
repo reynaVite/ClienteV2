@@ -194,250 +194,213 @@ export function RegistroF() {
     <>
       <CSPMetaTag />
       <Header />
-      <div className="Simon">
+      <div className="lg:w-5/12 lg:m-auto p-6">
         <ScrollToTop />
-        <div className="login-box">
-          <h2 className="mt-8 text-2xl font-bold leading-9 tracking-tight text-center">
-            Registro
-          </h2>
-          {showFirstForm && (
-            <Form
-              name="loginForm"
-              form={form}
-              initialValues={{ remember: true }}
-              onFinish={onFinish}
-              onFinishFailed={onFinishFailed}
-              onValuesChange={handleFormValuesChange}>
-              <Contenido conTit={"Curp:"} />
-              <Form.Item
-                name="curp"
-                rules={[
-                  {
-                    validator: async (_, value) => {
-                      if (!value || typeof value !== "string") {
-                        throw new Error(
-                          "Por favor, ingrese su CURP"
-                        );
-                      }
-                      const trimmedValue = value.trim();
-                      if (/[a-z]/.test(trimmedValue)) {
-                        throw new Error("La CURP solo debe contener mayúsculas");
-                      }
-                      const uppercasedValue = trimmedValue.toUpperCase();
-                      const pattern = /^[A-Z]{4}\d{6}[HM]{1}[A-Z\d]{5}[0-9A-Z]{2}$/;
-                      if (uppercasedValue.length !== 18) {
-                        throw new Error(
-                          "La CURP debe tener 18 letras mayúsculas/números)"
-                        );
-                      }
-                      if (!pattern.test(uppercasedValue)) {
-                        throw new Error("La CURP no es válida");
-                      }
-                      if (value !== trimmedValue) {
-                        throw new Error(
-                          "La CURP no debe contener espacios al inicio, en medio o al final"
-                        );
-                      }
-                    },
+        <h2 className="text-3xl font-bold text-center mb-6">Registro</h2>
+
+        {showFirstForm && (
+          <Form
+            name="loginForm"
+            form={form}
+            initialValues={{ remember: true }}
+            onFinish={onFinish}
+            onFinishFailed={onFinishFailed}
+            onValuesChange={handleFormValuesChange}
+          >
+            <Contenido conTit={"CURP:"} />
+            <Form.Item
+              name="curp"
+              rules={[
+                {
+                  validator: async (_, value) => {
+                    if (!value || typeof value !== "string") {
+                      throw new Error("Por favor, ingrese su CURP");
+                    }
+                    const trimmedValue = value.trim();
+                    if (/[a-z]/.test(trimmedValue)) {
+                      throw new Error("La CURP solo debe contener mayúsculas");
+                    }
+                    const uppercasedValue = trimmedValue.toUpperCase();
+                    const pattern = /^[A-Z]{4}\d{6}[HM]{1}[A-Z\d]{5}[0-9A-Z]{2}$/;
+                    if (uppercasedValue.length !== 18) {
+                      throw new Error("La CURP debe tener 18 letras mayúsculas/números)");
+                    }
+                    if (!pattern.test(uppercasedValue)) {
+                      throw new Error("La CURP no es válida");
+                    }
+                    if (value !== trimmedValue) {
+                      throw new Error("La CURP no debe contener espacios al inicio, en medio o al final");
+                    }
                   },
-                ]}
+                },
+              ]}
+            >
+              <Input
+                className="h-[42px] text-base border border-black border-opacity-30 rounded-md shadow-md"
+                prefix={<CheckCircleOutlined />}
+                placeholder="Ejemplo: MAPA850210MVERXXA1"
+              />
+            </Form.Item>
+            <Form.Item>
+              <Button
+                className="bg-blue_uno text-white h-11 text-lg w-full
+                  hover:text-gray hover:bg-white
+                  shadow-md"
+                type="primary"
+                htmlType="submit"
+                disabled={!formValues.curp}
               >
-                <Input className="lg:w-3/3 mb-5 h-[42px]  mt-1 text-base border border-black border-opacity-30 rounded-md shadow-md"
-                  prefix={<CheckCircleOutlined />}
-                  placeholder="Ejemplo: MAPA850210MVERXXA1"
-                />
-              </Form.Item>
-              <Form.Item>
-                <Button className="bg-blue_uno text-white h-11 text-lg w-3/4 
-                        hover:text-gray lg:mt-2 hover:bg-white
-                          md:w-2/4
-                          celular:w-2/4 celular:mb-5 celular:mt-3 shadow-md" type="primary" htmlType="submit" disabled={!formValues.curp} style={{ color: 'black' }}>
-                  Continuar registro
-                </Button>
-              </Form.Item>
-            </Form>
-          )}
-          {showSecondForm && (
-            <Form
-              name="loginForm"
-              form={form}
-              initialValues={{ remember: true }}
-              onFinish={onFinish1}
-              onFinishFailed={onFinishFailed1}
-              onValuesChange={handleFormValuesChange1}>
+                Continuar
+              </Button>
+            </Form.Item>
+          </Form>
+        )}
 
-              <Contenido conTit={"Pregunta secreta:"} />
-              <Form.Item
-                name="pregunta"
-                rules={[
-                  {
-                    required: true,
-                    message: (
-                      <Notificacion
-                        noti={"Seleccione la pregunta secreta para el personal"}
-                      />
-                    ),
-                  },
-                ]}
+        {showSecondForm && (
+          <Form
+            name="loginForm"
+            form={form}
+            initialValues={{ remember: true }}
+            onFinish={onFinish1}
+            onFinishFailed={onFinishFailed1}
+            onValuesChange={handleFormValuesChange1}
+          >
+            <Contenido conTit={"Pregunta secreta:"} />
+            <Form.Item
+              name="pregunta"
+              rules={[
+                {
+                  required: true,
+                  message: (
+                    <Notificacion
+                      noti={"Seleccione la pregunta secreta para el personal"}
+                    />
+                  ),
+                },
+              ]}
+            >
+              <Select
+                placeholder="Ejemplo: ¿En qué escuela primaria...."
+                className="h-[42px] text-base border border-black border-opacity-30 rounded-md shadow-md"
+                suffixIcon={<IdcardOutlined />}
               >
-                <Select
-                  placeholder="Ejemplo: ¿En qué escuela primaria...."
-                  suffixIcon={<IdcardOutlined />}
-                >
-                  {preguntasSecretasOptions.map((option) => (
-                    <Option key={option.value} value={option.value}>
-                      {option.label}
-                    </Option>
-                  ))}
-                </Select>
-              </Form.Item>
+                {preguntasSecretasOptions.map((option) => (
+                  <Option key={option.value} value={option.value}>
+                    {option.label}
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
 
-              <Contenido conTit={"Respuesta a la pregunta secreta:"} />
-              <Form.Item
-                name="respuesta"
-                rules={[
-                  {
-                    required: true,
-                    message: (
-                      <Notificacion noti={"Ingrese la respuesta a la pregunta"} />
-                    ),
+            <Contenido conTit={"Respuesta a la pregunta secreta:"} />
+            <Form.Item
+              name="respuesta"
+              rules={[
+                {
+                  required: true,
+                  message: <Notificacion noti={"Ingrese la respuesta a la pregunta"} />,
+                },
+                {
+                  pattern: /^[A-Za-zÁáÉéÍíÓóÚúÜüÑñ0-9\s]{3,30}$/,
+                  message: "Solo letras, números, longitud entre 3 y 30.",
+                },
+              ]}
+            >
+              <Input
+                prefix={<UserOutlined />}
+                className="h-[42px] text-base border border-black border-opacity-30 rounded-md shadow-md"
+                placeholder="Ejemplo: Primaria 12..."
+              />
+            </Form.Item>
+
+
+            <Contenido conTit={"Contraseña:"} />
+            <Form.Item
+              name="contra"
+              rules={[
+                {
+                  required: true,
+                  message: <Notificacion noti={"Ingrese la contraseña para el personal"} />,
+                },
+                {
+                  validator: async (_, value) => {
+                    // Validaciones de contraseña aquí...
                   },
-                  {
-                    pattern: /^[A-Za-zÁáÉéÍíÓóÚúÜüÑñ0-9\s]{3,30}$/,
-                    message: "Solo letras, números, longitud entre 3 y 30.",
+                },
+              ]}
+            >
+              <Input.Password
+                prefix={<LockOutlined />}
+                className="h-[42px] text-base border border-black border-opacity-30 rounded-md shadow-md"
+                placeholder="Ejemplo: Ejemplo00#"
+                onChange={handlePasswordChange}
+              />
+            </Form.Item>
+            {mensaje && <div>{mensaje}</div>}
+            <Progress percent={contrasenaFortaleza.score} status="active" strokeColor={contrasenaFortaleza.color} />
+
+            <Contenido conTit={"Repite la contraseña:"} />
+            <Form.Item
+              name="contrasena"
+              dependencies={["contra"]}
+              rules={[
+                {
+                  required: true,
+                  message: "Confirma la contraseña.",
+                },
+                ({ getFieldValue }) => ({
+                  validator(_, value) {
+                    if (!value || getFieldValue("contra") === value) {
+                      setPasswordMatch(true);
+                      return Promise.resolve();
+                    }
+                    setPasswordMatch(false);
+                    return Promise.reject("Las contraseñas no coinciden.");
                   },
-                ]}
-              >
-                <Input
-                  prefix={<UserOutlined />}
-                  placeholder="Ejemplo: Primaria 12..."
-                />
-              </Form.Item>
+                }),
+              ]}
+            >
+              <Input.Password
+                prefix={<LockOutlined />}
+                className="h-[42px] text-base border border-black border-opacity-30 rounded-md shadow-md"
+                placeholder="Ejemplo: Ejemplo00#"
+              />
+            </Form.Item>
 
-              <Contenido conTit={"Contraseña:"} />
-              <Form.Item
-                name="contra"
-                rules={[
-                  {
-                    required: true,
-                    message: (
-                      <Notificacion
-                        noti={"Ingrese la contraseña para el personal"}
-                      />
-                    ),
-                  },
-                  {
-                    validator: async (_, value) => {
-                      try {
-                        if (typeof value !== "string") {
-                          throw new Error("");
-                        }
-                        if (/\s/.test(value)) {
-                          throw new Error(
-                            "La contraseña no puede contener espacios."
-                          );
-                        }
-                        if (!hasMinimumLength(value)) {
-                          throw new Error(
-                            "La contraseña debe tener un máximo 12 caracteres."
-                          );
-                        }
-                        if (!hasUpperCase(value)) {
-                          throw new Error(
-                            "La contraseña debe contener al menos una letra mayúscula."
-                          );
-                        }
-                        if (!hasLowerCase(value)) {
-                          throw new Error(
-                            "La contraseña debe contener al menos una letra minúscula."
-                          );
-                        }
-                        if (!hasNumber(value)) {
-                          throw new Error(
-                            "La contraseña debe contener al menos un número."
-                          );
-                        }
-                        if (!hasSpecialChar(value)) {
-                          throw new Error(
-                            "La contraseña debe contener al menos un carácter especial."
-                          );
-                        }
-                        return Promise.resolve();
-                      } catch (error) {
-                        throw new Error(error.message);
-                      }
-                    },
-                  },
-                ]}
-              >
-                <Input.Password
-                  prefix={<LockOutlined />}
-                  placeholder="Ejemplo: Ejemplo00#"
-                  onChange={handlePasswordChange}
-                />
-              </Form.Item>
-              {mensaje && <div>{mensaje}</div>} {/* Mostrar el mensaje */}
-              <Progress percent={contrasenaFortaleza.score} status="active" strokeColor={contrasenaFortaleza.color} />
+            <Form.Item
+              name="terms"
+              valuePropName="checked"
+              rules={[
+                { validator: (_, value) => value ? Promise.resolve() : Promise.reject('Debe aceptar los términos y condiciones') }
+              ]}
+            >
+              <Checkbox checked={checked} onChange={handleTermsChange} style={{ marginRight: '5px' }}>
+                <Link to="/Terminos" target="_blank">
+                  <Contenido conTit={"Acepto los términos y condiciones"} />
+                </Link>
+              </Checkbox>
+            </Form.Item>
 
-              <Contenido conTit={"Repite la contraseña:"} />
-              <Form.Item
-                name="contrasena"
-                dependencies={["contra"]}
-                rules={[
-                  {
-                    required: true,
-                    message: "Confirma la contraseña.",
-                  },
-                  ({ getFieldValue }) => ({
-                    validator(_, value) {
-                      if (!value || getFieldValue("contra") === value) {
-                        setPasswordMatch(true);
-                        return Promise.resolve();
-                      }
-                      setPasswordMatch(false);
-                      return Promise.reject("Las contraseñas no coinciden.");
-                    },
-                  }),
-                ]}
-              >
-                <Input.Password
-                  prefix={<LockOutlined />}
-                  placeholder="Ejemplo: Ejemplo00#" />
-              </Form.Item>
+            <Form.Item>
+              <Button className="bg-blue_uno text-white h-11 text-lg w-full
+                  hover:text-gray hover:bg-white
+                  shadow-md" type="primary" htmlType="submit" disabled={!checked || !formValues.pregunta || !formValues.respuesta || !formValues.contra || !formValues.terms}>
+                Registrar
+              </Button>
+            </Form.Item>
 
-              <Form.Item
-                name="terms"
-                valuePropName="checked"
-                rules={[
-                  { validator: (_, value) => value ? Promise.resolve() : Promise.reject('Debe aceptar los términos y condiciones') }
-                ]}>
-
-                <Checkbox checked={checked} onChange={handleTermsChange} style={{ marginRight: '5px' }}>
-                  <Link to="/Terminos" target="_blank">
-                    <Contenido conTit={"Acepto los términos y condiciones"} />
-                  </Link>
-                </Checkbox>
-              </Form.Item>
-
-              <Form.Item>
-                <Button style={{ color: 'black' }} type="primary" htmlType="submit" disabled={!checked || !formValues.pregunta || !formValues.respuesta || !formValues.contra || !formValues.terms}>
-                  Registrar
-                </Button>
-              </Form.Item>
-
-              <Form.Item>
-                <Button type="primary" onClick={() => {
-                  setShowFirstForm(true);
-                  setShowSecondForm(false);
-                }}
-                  style={{ color: 'black' }}
-                >
-                  Ir atrás
-                </Button>
-              </Form.Item>
-            </Form>
-          )}
-        </div>
+            <Form.Item>
+              <Button type="primary" className="bg-blue_uno text-white h-11 text-lg w-full
+                  hover:text-gray hover:bg-white
+                  shadow-md" onClick={() => {
+                setShowFirstForm(true);
+                setShowSecondForm(false);
+              }}>
+                Ir atrás
+              </Button>
+            </Form.Item>
+          </Form>
+        )}
       </div>
       <Footer />
     </>

@@ -41,13 +41,10 @@ export const routesByRole = {
   "2": [
     { name: "Inicio", path: "/Inicio" },
     ,
-    {
-      name: "Maestros",
-      submenu: [
-        { name: "Asignar", path: "/AsigGrupo" }, 
-        { name: "Asignados", path: "/Asignados" }, 
-      ],
-    },
+
+    
+  { name: "Asignados", path: "/Asignados" },
+  
     
 
 

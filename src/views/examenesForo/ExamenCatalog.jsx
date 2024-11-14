@@ -11,7 +11,7 @@ import icono from "./exameeeen.png";
 const ExamCatalog = () => {
   const [exams, setExams] = useState([]);
   const navigate = useNavigate();
- 
+
   const obtenerExamenes = async () => {
     try {
       const response = await axios.get("https://servidor-zonadoce.vercel.app/consultarMaterias");
@@ -28,7 +28,7 @@ const ExamCatalog = () => {
   const handleExamClick = (exam) => {
     navigate(`/ExamenesPrueba/${exam.id}`, { state: { exam } });
   };
- 
+
   const groupedExams = exams.reduce((acc, exam) => {
     if (!acc[exam.materia]) {
       acc[exam.materia] = [];
@@ -59,12 +59,12 @@ const ExamCatalog = () => {
               {groupedExams[materia].map((exam) => (
                 <div key={exam.id} onClick={() => handleExamClick(exam)}>
                   <ExamCard
-  title={exam.materia}
-  description={exam.descripcion}
-  docente_curp={exam.docente_curp} // Asegúrate de que esta línea esté correcta
-  hora={exam.hora}
-  fecha={exam.fecha}
-/>
+                    title={exam.materia}
+                    description={exam.descripcion}
+                    docente_curp={exam.docente_curp} // Asegúrate de que esta línea esté correcta
+                    hora={exam.hora}
+                    fecha={exam.fecha}
+                  />
 
                 </div>
               ))}

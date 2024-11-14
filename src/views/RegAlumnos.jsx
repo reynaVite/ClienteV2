@@ -5,7 +5,10 @@ import { Footer } from "../components/Footer";
 import { Titulo } from "../components/Titulos";
 import { InboxOutlined } from "@ant-design/icons";
 import { message, Upload, Button, notification, Table, Divider, Input, Affix } from "antd";
-import * as XLSX from "xlsx";
+import * as XLSX from "xlsx"; 
+
+import { uploadBytes, ref } from "firebase/storage";
+import { storage } from "../firebase/config"; // Importa correctamente tu configuración de Firebase
 
 const { Dragger } = Upload;
 
@@ -20,166 +23,165 @@ const openNotification = () => {
 export function Regalu() {
   const [tableData, setTableData] = useState([]);
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
-  const [buttonLoading, setButtonLoading] = useState(false); // Estado de carga del botón
- 
+  const [buttonLoading, setButtonLoading] = useState(false);
   const [cicloEscolar, setCicloEscolar] = useState("2024-2025");
 
   useEffect(() => {
     setIsButtonDisabled(tableData.length === 0);
-  }, [tableData]); // Habilita el botón de registro cuando se extraen datos para la tabla
+  }, [tableData]);
 
-  const handleFileUpload = (file) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const data = new Uint8Array(e.target.result);
-      const workbook = XLSX.read(data, { type: "array" });
-      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-      const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-      setTableData(jsonData);  // Guardar los datos en el estado del componente
-    };
-    reader.readAsArrayBuffer(file);
+  const handleFileUpload = async (file) => {
+    const fileRef = ref(storage, `alumnos/${file.name}`);
+    
+    try {
+      await uploadBytes(fileRef, file);
+      message.success(`${file.name} subido correctamente`);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: "array" });
+        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+        setTableData(jsonData);
+      };
+      reader.readAsArrayBuffer(file);
+    } catch (error) {
+      console.error("Error al subir el archivo:", error);
+      message.error("Error al subir el archivo.");
+    }
   };
 
   const registrarAlumnosEnBD = async () => {
-    if (!validateCicloEscolar(cicloEscolar)) {// Validar el formato del ciclo escolar
-      notification.error({
-        message: "Ciclo escolar inválido",
-        description: "Ingresa un ciclo válido (ej. 2024-2025) con el año actual y próximo.",
-        placement: "bottomRight",
-      });
-      return; // Detener la función si el ciclo escolar no es válido
-    }
-    const datosValidos = tableData.every(alumno => alumno.length === 4);// Verificar si los datos tienen cuatro campos válidos
-    if (!datosValidos) {
-      notification.error({
-        message: "Datos inválidos",
-        description: "Cada fila del archivo debe contener cuatro campos: nombre, apellido paterno, apellido materno y sexo.",
-        placement: "bottomRight",
-      });
-      return; // Detener la función si los datos no son válidos
-    }
-    try {
-      const response = await fetch('https://servidor-zonadoce.vercel.app/verificar-asignacion', {// Verificar si el usuario tiene una asignación haciendo una solicitud HTTP
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({})  
-      });
-      const tieneAsignacion = await response.json()
-      
-      // Verificar si la solicitud fue exitosa y si tiene asignación
-      if (response.ok && tieneAsignacion.success) {
+    const userCURP = localStorage.getItem("userCURP") || "";
+    const plantel = localStorage.getItem("userPlantel") || "";
 
-      // Si el usuario tiene asignación, continuar con el registro de alumnos
-        const dataToSend = {
-          alumnos: tableData,
-          cicloEscolar: cicloEscolar
-        };
-        console.log("Datos que se enviarán al backend:", dataToSend);
+    console.log('CURP del usuario:', userCURP);
+    console.log('Plantel del usuario:', plantel);
+    console.log('Ciclo escolar:', cicloEscolar);
+    console.log('Datos de alumnos:', tableData);
 
-        // Verificar duplicados antes de enviar los datos al backend
-        const duplicadosResponse = await fetch('https://servidor-zonadoce.vercel.app/verificar-duplicados', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(dataToSend) // Envía los datos extraídos del archivo Excel y cicloEscolar al backend para verificar duplicados
+    if (!validateCicloEscolar(cicloEscolar)) {
+        notification.error({
+            message: "Ciclo escolar inválido",
+            description: "Ingresa un ciclo válido (ej. 2024-2025) con el año actual y próximo.",
+            placement: "bottomRight",
         });
-        const { duplicadosEncontrados, error } = await duplicadosResponse.json();
-        if (error) {// Si hay un error en los datos, mostrar un mensaje de error al usuario
-          notification.error({
-            message: "Error en los datos",
-            description: error,
-            placement: "bottomRight"
-          });
-        } else if (duplicadosEncontrados) {
-          notification.warning({
-            message: "Algunos alumnos ya están registrados",
-            description: "Algunos alumnos que intentas registrar ya están en el sistema. Por favor, revisa los datos e intenta nuevamente.",
-            placement: "bottomRight"
-          });
+        return; 
+    }
 
-        } else {// No se encontraron duplicados, continuar con el registro de alumnos
-          setButtonLoading(true); // Activar el estado de carga del botón
-          const registroResponse = await fetch('https://servidor-zonadoce.vercel.app/registrar-alumnos', {
+    const datosValidos = tableData.every(alumno => alumno.length === 4);
+    if (!datosValidos) {
+        notification.error({
+            message: "Datos inválidos",
+            description: "Cada fila del archivo debe contener cuatro campos: nombre, apellido paterno, apellido materno y sexo.",
+            placement: "bottomRight",
+        });
+        return; 
+    }
+
+    try {
+        // Verificar asignación
+        const response = await fetch('https://servidor-zonadoce.vercel.app/verificar-asignacion', {
             method: 'POST',
             headers: {
-              'Content-Type': 'application/json'
+                'Content-Type': 'application/json'
             },
-            body: JSON.stringify(dataToSend) // Envía los datos extraídos del archivo Excel y cicloEscolar al backend
-          });
+            body: JSON.stringify({ userCURP, plantel })
+        });
 
-          if (registroResponse.ok) {
+        console.log('Respuesta de verificar asignación:', response);
+
+        if (!response.ok) {
+            const errorResponse = await response.json();
+            notification.error({
+                message: "Error al verificar asignación",
+                description: errorResponse.message || 'No se pudo verificar la asignación. Inténtalo de nuevo más tarde.',
+                placement: "bottomRight"
+            });
+            return;
+        }
+
+        const tieneAsignacion = await response.json();
+        console.log('Resultado de verificar asignación:', tieneAsignacion);
+
+        if (tieneAsignacion.success) {
+            // Preparar datos para enviar
+            const dataToSend = {
+                alumnos: tableData,
+                cicloEscolar: cicloEscolar,
+                curp: userCURP 
+            };
+
+            // Guardar los datos en la base de datos
+            const registroResponse = await fetch('https://servidor-zonadoce.vercel.app/registrar-alumnos', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(dataToSend)
+            });
+
+            console.log('Respuesta de registrar alumnos:', registroResponse);
+
+            if (!registroResponse.ok) {
+                const errorResponse = await registroResponse.json();
+                notification.error({
+                    message: "Error al registrar alumnos",
+                    description: errorResponse.message || 'Hubo un problema al intentar registrar los alumnos. Por favor, inténtalo de nuevo.',
+                    placement: "bottomRight"
+                });
+                return;
+            }
+
             // Los datos se almacenaron correctamente en la base de datos
             notification.success({
-              message: "Alumnos registrados correctamente",
-              placement: "bottomRight"
+                message: "Alumnos registrados correctamente",
+                placement: "bottomRight"
             });
-          } else {
-            // Hubo un error al almacenar los datos
-            notification.error({
-              message: "Error al registrar alumnos",
-              description: "Hubo un problema al intentar registrar los alumnos. Por favor, inténtalo de nuevo.",
-              placement: "bottomRight"
+        } else {
+            notification.warning({
+                message: "No tienes una asignación",
+                description: "Debes tener una asignación para registrar alumnos.",
+                placement: "bottomRight"
             });
-          }
         }
-      }// Si el usuario no tiene asignación, mostrar un mensaje de advertencia
-      else {
-        notification.warning({
-          message: "No tienes una asignación",
-          description: "Debes tener una asignación para registrar alumnos.",
-          placement: "bottomRight"
-        });
-      }
     } catch (error) {
-      console.error('Error de red:', error);
-    }finally {
-      setButtonLoading(false); // Desactivar el estado de carga del botón al finalizar el proceso
+        console.error('Error de red:', error);
+        notification.error({
+            message: "Error de red",
+            description: error.message || 'Se produjo un error inesperado. Por favor, inténtalo de nuevo.',
+            placement: "bottomRight"
+        });
+    } finally {
+        setButtonLoading(false); 
     }
-  };
+};
 
   const validateCicloEscolar = (cicloEscolar) => {
     const regex = /^\d{4}-\d{4}$/;
-    const currentYear = new Date().getFullYear();// Obtener el año actual
-    const nextYear = currentYear + 1;// Construir el siguiente año
-    const expectedPattern = `${currentYear}-${nextYear}`;// Construir el patrón esperado para el ciclo escolar
+    const currentYear = new Date().getFullYear();
+    const nextYear = currentYear + 1;
+    const expectedPattern = `${currentYear}-${nextYear}`;
     return regex.test(cicloEscolar) && cicloEscolar === expectedPattern;
   };
 
   const props = {
     name: "file",
-    action: "https://servidor-zonadoce.vercel.app/upload",
     maxCount: 1,
-    onChange(info) {
-      const { status } = info.file;
-      console.log("Estado del archivo:", status); // Agregar este registro de consola
-      
-      if (status === "done") {
-        notification.success({
-          message: "Archivo cargado correctamente",
-          description: `Su archivo ${info.file.name}"  se cargo correctamente, para continuar con el proceso, presionar el boton "Registrar"`,
-          placement: "bottomRight"
-        });
-      } else if (status === "error") {
-        message.error(`${info.file.name} No logró subirse el documento.`);
-      }
-    },
     beforeUpload(file) {
       const isExcel =
         file.type === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
         file.type === "application/vnd.ms-excel";
       if (!isExcel) {
         openNotification();
-        return false; // No cargues el archivo si no es un archivo de Excel
+        return false; 
       } else {
-        handleFileUpload(file); // Solo carga el archivo si es un archivo de Excel
-        return true;
+        handleFileUpload(file); 
+        return false; 
       }
     },
   };
-  
+
   const generateColumnsAndDataSource = (data) => {
     const columns = data[0].map((header, index) => ({
       title: header,
@@ -198,66 +200,60 @@ export function Regalu() {
     return { columns, dataSource };
   };
 
-  // Solo generar columnas y origen de datos si tableData tiene datos válidos
   const { columns, dataSource } =
     tableData.length > 0
       ? generateColumnsAndDataSource(tableData)
       : { columns: [], dataSource: [] };
-  return (
-    <>
-      <Affix><Header/></Affix>
-      <Titulo tit={"Registrar alumnos"} />
-      <div className="container flex flex-row m-auto">
-        <div className="basis-2/4 px-6 mb-52">
-          <p className="p-5 font-bold text-center text-lg">
-            Seleccionar archivo con lista de alumnos
-          </p>
-          <div className="h-max basis-2/5">
-            <Dragger {...props}>
-              <p className="ant-upload-drag-icon">
-                <InboxOutlined />
+      return (
+        <>
+          <Affix><Header/></Affix>
+          <Titulo tit={"Registrar alumnos"} />
+          <div className="container flex flex-row m-auto">
+            <div className="basis-2/4 px-6 mb-52">
+              <p className="p-5 font-bold text-center text-lg">
+                Seleccionar archivo con lista de alumnos
               </p>
-              <p className="ant-upload-text">
-                Click aquí para subir su lista de alumnos
-              </p>
-              <p className="ant-upload-hint">
-                Si llega a presentar algún problema con la subida de su
-                documento, no dude en pedir ayuda y soporte; se tratará de dar
-                solución lo antes posible.
-              </p>
-            </Dragger>
-          </div>
-          <div className="mt-4 items-start">
-            <label >
-              Ciclo escolar:
-            </label>
-            <Input
-              placeholder="Ejemplo 2024-2025"
-              value={cicloEscolar}
-              onChange={(e) => setCicloEscolar(e.target.value)} 
+              <div className="h-max basis-2/5">
+                <Dragger {...props}>
+                  <p className="ant-upload-drag-icon">
+                    <InboxOutlined />
+                  </p>
+                  <p className="ant-upload-text">
+                    Click aquí para subir su lista de alumnos
+                  </p>
+                  <p className="ant-upload-hint">
+                    Si llega a presentar algún problema con la subida de su
+                    documento, no dude en pedir ayuda y soporte; se tratará de dar
+                    solución lo antes posible.
+                  </p>
+                </Dragger>
+              </div>
+              <div className="mt-4 items-start">
+                <label>Ciclo escolar:</label>
+                <Input
+                  placeholder="Ejemplo 2024-2025"
+                  value={cicloEscolar}
+                  onChange={(e) => setCicloEscolar(e.target.value)} 
+                />
+                <Button
+                  type="primary"
+                  onClick={registrarAlumnosEnBD}
+                  disabled={isButtonDisabled} 
+                  loading={buttonLoading}
+                >
+                  Registrar
+                </Button>
+              </div>
+            </div>
+            <Divider
+              type="vertical"
+              className="h-[450px] border border-black opacity-30"
             />
-            <Button
-              type="primary"
-              className="bg-blue_uno text-white h-11 text-lg w-3/4 lg:mb-2 lg:mt-5 
-              ease-in-out delay-150 hover-text-grays
-              celular:w-2/4 celular:mb-5 celular:mt-3
-              duration-75"
-              onClick={registrarAlumnosEnBD} // Llama a la función para registrar alumnos en la base de datos
-              disabled={isButtonDisabled} loading={buttonLoading}// Deshabilita el botón si no hay datos en la tabla
-            >
-              Registrar
-            </Button>
+            <div className="container ml-6 basis-3/5">
+              <Table columns={columns} dataSource={dataSource} />
+            </div>
           </div>
-        </div>
-        <Divider
-          type="vertical"
-          className="h-[450px] border border-black opacity-30"
-        />
-        <div className="container ml-6 basis-3/5">
-          <Table columns={columns} dataSource={dataSource} />
-        </div>
-      </div>
-      <Footer />
-    </>
-  );
-}
+          <Footer />
+        </>
+      );
+    }

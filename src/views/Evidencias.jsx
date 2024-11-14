@@ -281,7 +281,7 @@ export function Evidencias() {
     <>
       <Affix><Header /></Affix>
       <Presentacion
-        tit={"Evidencias:)"}
+        tit={"Evidencias"}
         icono={<img src={icono} className="lg:w-[280px] lg:translate-x-32 lg:-translate-y-10 text-white celular:translate-x-2 lg:z-50" />}
       />
       <div className="lg:w-10/12 lg:m-auto">
