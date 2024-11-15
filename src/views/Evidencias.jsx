@@ -4,6 +4,8 @@ import { Footer } from "../components/Footer";
 import { Presentacion } from "../components/Presntacion";
 import { UploadOutlined, EditOutlined } from "@ant-design/icons";
 import { Button, Affix, message, Modal, Upload, Radio } from "antd";
+
+import ConnectionStatus from "../components/ConnectionStatus";  
 import axios from "axios";
 import { Table } from "antd";
 import { Titulo } from "../components/Titulos";
@@ -286,7 +288,7 @@ export function Evidencias() {
       />
       <div className="lg:w-10/12 lg:m-auto">
         <ScrollToTop />
-
+        <ConnectionStatus />
         <section className="basis-3/4 mx-5">
           <Titulo tit={"Lista de actividades"} />
           <Button onClick={enviarNotificacion} icon={<UploadOutlined />}>Enviar Notificación</Button>

@@ -52,6 +52,9 @@ import Comments from "./views/examenesForo/examenesScreen";
 import ExamCatalog from "./views/examenesForo/ExamenCatalog";
 
 
+import Valoracion from "./views/Valoracion";
+
+
 // Componente ScrollToTop
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -235,7 +238,10 @@ const router = createBrowserRouter([
   {
     path: "/ExamenesPrueba",
     element: <ExamCatalog />,
-  },
+  },{
+    path: "/Valoracion",
+    element: <Valoracion/>
+  }
    
    
    

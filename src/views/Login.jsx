@@ -3,10 +3,12 @@ import React, { useRef, useState } from "react";
 import axios from "axios";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
+import ConnectionStatus from "../components/ConnectionStatus";  
 import { Link } from "react-router-dom";
 import { ScrollToTop } from "../components/ScrollToTop";
 import { Form, Input, Button, Select, message } from "antd";
 import {CheckCircleOutlined, LockOutlined} 
+
 from "@ant-design/icons";
 import { Subtitulo, Contenido } from "../components/Titulos";
 import ReCAPTCHA from "react-google-recaptcha";
@@ -108,7 +110,7 @@ export function Login() {
       <Header />
       <main className="grid lg:grid-cols-12 gap-4 md:grid-cols-12 celular:grid-cols-12">
         <ScrollToTop />
-    
+        <ConnectionStatus />
         {/* Formulario - Ocupa 5/12 columnas en pantallas grandes y 12/12 en celulares */}
         <div className="lg:col-span-5 mx-10 md:col-span-7 celular:col-span-12">
           <h2 className="mt-8 text-2xl font-bold leading-9 tracking-tight text-center">
@@ -201,8 +203,8 @@ export function Login() {
               ]}
             >
               <ReCAPTCHA
-                //sitekey="6LfPh4UpAAAAADrQnchMkx5WoF9InHXo0jYAt2JC"
-                sitekey="6LfDMn4qAAAAACEu0qAaEWEP5Domq58tAYq3mEVM"
+                sitekey="6LfPh4UpAAAAADrQnchMkx5WoF9InHXo0jYAt2JC"
+                //sitekey="6LfDMn4qAAAAACEu0qAaEWEP5Domq58tAYq3mEVM"
                 onChange={onChange}
               />
             </Form.Item>

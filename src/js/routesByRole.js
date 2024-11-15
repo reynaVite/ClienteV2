@@ -34,7 +34,7 @@ export const routesByRole = {
 
     { name: "Solicitudes", path: "/AdminSol" }, 
     { name: "Preguntas", path: "/Preguntas" },
-    { name: "Mapa", path: "/Mapa" },
+    { name: "Valoracion", path: "/Valoracion" },
     { name:"Salir", path:"/Logout"}
 
   ],
