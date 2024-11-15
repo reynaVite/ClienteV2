@@ -68,8 +68,6 @@ export default defineConfig({
       ...manifestForPlugin,
       strategies: 'generateSW', // Se genera el Service Worker automáticamente
       workbox: { 
-        globDirectory: 'public', // Directorio base donde están los recursos estáticos
-        globPatterns: ['img/**/*.{png,jpg,jpeg,gif}'], // Precarga todas las imágenes de public/img
         runtimeCaching: [
           {
             urlPattern: ({ request }) => request.destination === 'image',
